@@ -76,9 +76,9 @@ function buildZip(entries: FixtureEntry[]) {
   return Buffer.concat([...localParts, ...centralParts, eocd]);
 }
 
-function entryText(buffer: Buffer, name: string) {
-  const entry = readZipEntries(buffer).find((candidate) => candidate.name === name);
-  return entry ? readZipEntryData(entry).toString("utf8") : null;
+function entryText(bytes: Uint8Array, name: string) {
+  const entry = readZipEntries(bytes).find((candidate) => candidate.name === name);
+  return entry ? new TextDecoder().decode(readZipEntryData(entry)) : null;
 }
 
 const DOCX_CORE = `<?xml version="1.0"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:creator>Secret Author</dc:creator><cp:lastModifiedBy>Secret Editor</cp:lastModifiedBy></cp:coreProperties>`;
@@ -109,11 +109,11 @@ describe("zip rewriter", () => {
     const entries = readZipEntries(rebuilt);
 
     expect(entries.map((entry) => entry.name)).toEqual(["a.txt", "b.bin"]);
-    expect(readZipEntryData(entries[0]).toString("utf8")).toBe("hello");
-    expect(readZipEntryData(entries[1])).toEqual(Buffer.from([1, 2, 3]));
+    expect(new TextDecoder().decode(readZipEntryData(entries[0]))).toBe("hello");
+    expect(Array.from(readZipEntryData(entries[1]))).toEqual([1, 2, 3]);
     // Local header timestamp bytes must be the DOS epoch.
-    expect(rebuilt.readUInt16LE(10)).toBe(0);
-    expect(rebuilt.readUInt16LE(12)).toBe(0x21);
+    expect(rebuilt[10] | (rebuilt[11] << 8)).toBe(0);
+    expect(rebuilt[12] | (rebuilt[13] << 8)).toBe(0x21);
   });
 
   it("replaces and removes entries", () => {

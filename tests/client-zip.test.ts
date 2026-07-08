@@ -16,7 +16,7 @@ describe("client zip", () => {
     const entries = readZipEntries(buffer);
 
     expect(entries.map((entry) => entry.name)).toEqual(["a.txt", "b.bin"]);
-    expect(readZipEntryData(entries[0]).toString("utf8")).toBe("hello world");
+    expect(new TextDecoder().decode(readZipEntryData(entries[0]))).toBe("hello world");
     expect(Array.from(readZipEntryData(entries[1]))).toEqual([1, 2, 3, 4, 5]);
   });
 

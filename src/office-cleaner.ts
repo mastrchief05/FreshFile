@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
 import { DOMParser, XMLSerializer, type Element as XmlElement } from "@xmldom/xmldom";
+import { decodeLatin1, decodeUtf8, encodeLatin1, encodeUtf8, sha256Hex } from "./bytes";
 import { readZipEntries, readZipEntryData, rebuildZip, ZipRewriteError, type ZipEntry } from "./zip-rewriter";
 
 // Package-level metadata cleaning for OOXML (docx/xlsx/pptx), ODF (odt/ods/odp),
@@ -94,19 +94,19 @@ function typesWithoutParts(typesXml: string, removedNames: Set<string>) {
   return changed ? serializeXml(document) : null;
 }
 
-export function cleanOoxmlPackage(buffer: Buffer): Buffer {
+export function cleanOoxmlPackage(buffer: Uint8Array): Uint8Array {
   const entries = readZipEntries(buffer);
   const byName = entryMap(entries);
   if (!byName.has("[Content_Types].xml") || !byName.has("_rels/.rels")) {
     throw new OfficeCleanerError("Not a valid OOXML package.");
   }
 
-  const replace = new Map<string, Buffer>();
+  const replace = new Map<string, Uint8Array>();
   const remove = new Set<string>();
 
-  if (byName.has("docProps/core.xml")) replace.set("docProps/core.xml", Buffer.from(MINIMAL_CORE_XML, "utf8"));
-  if (byName.has("docProps/app.xml")) replace.set("docProps/app.xml", Buffer.from(MINIMAL_APP_XML, "utf8"));
-  if (byName.has("docProps/custom.xml")) replace.set("docProps/custom.xml", Buffer.from(MINIMAL_CUSTOM_XML, "utf8"));
+  if (byName.has("docProps/core.xml")) replace.set("docProps/core.xml", encodeUtf8(MINIMAL_CORE_XML));
+  if (byName.has("docProps/app.xml")) replace.set("docProps/app.xml", encodeUtf8(MINIMAL_APP_XML));
+  if (byName.has("docProps/custom.xml")) replace.set("docProps/custom.xml", encodeUtf8(MINIMAL_CUSTOM_XML));
 
   // Thumbnails and every non-standard docProps part (writer fingerprints).
   for (const entry of entries) {
@@ -118,13 +118,13 @@ export function cleanOoxmlPackage(buffer: Buffer): Buffer {
   if (remove.size > 0) {
     const rels = byName.get("_rels/.rels");
     if (rels) {
-      const patched = relsWithoutTargets(readZipEntryData(rels).toString("utf8"), remove);
-      if (patched) replace.set("_rels/.rels", Buffer.from(patched, "utf8"));
+      const patched = relsWithoutTargets(decodeUtf8(readZipEntryData(rels)), remove);
+      if (patched) replace.set("_rels/.rels", encodeUtf8(patched));
     }
     const types = byName.get("[Content_Types].xml");
     if (types) {
-      const patched = typesWithoutParts(readZipEntryData(types).toString("utf8"), remove);
-      if (patched) replace.set("[Content_Types].xml", Buffer.from(patched, "utf8"));
+      const patched = typesWithoutParts(decodeUtf8(readZipEntryData(types)), remove);
+      if (patched) replace.set("[Content_Types].xml", encodeUtf8(patched));
     }
   }
 
@@ -147,17 +147,17 @@ function manifestWithoutEntries(manifestXml: string, removedNames: Set<string>) 
   return changed ? serializeXml(document) : null;
 }
 
-export function cleanOdfPackage(buffer: Buffer): Buffer {
+export function cleanOdfPackage(buffer: Uint8Array): Uint8Array {
   const entries = readZipEntries(buffer);
   const byName = entryMap(entries);
   if (!byName.has("content.xml") || !byName.has("META-INF/manifest.xml")) {
     throw new OfficeCleanerError("Not a valid ODF package.");
   }
 
-  const replace = new Map<string, Buffer>();
+  const replace = new Map<string, Uint8Array>();
   const remove = new Set<string>();
 
-  if (byName.has("meta.xml")) replace.set("meta.xml", Buffer.from(MINIMAL_ODF_META_XML, "utf8"));
+  if (byName.has("meta.xml")) replace.set("meta.xml", encodeUtf8(MINIMAL_ODF_META_XML));
 
   for (const entry of entries) {
     if (entry.name.startsWith("Thumbnails/") && entry.name !== "Thumbnails/") {
@@ -168,8 +168,8 @@ export function cleanOdfPackage(buffer: Buffer): Buffer {
   if (remove.size > 0) {
     const manifest = byName.get("META-INF/manifest.xml");
     if (manifest) {
-      const patched = manifestWithoutEntries(readZipEntryData(manifest).toString("utf8"), remove);
-      if (patched) replace.set("META-INF/manifest.xml", Buffer.from(patched, "utf8"));
+      const patched = manifestWithoutEntries(decodeUtf8(readZipEntryData(manifest)), remove);
+      if (patched) replace.set("META-INF/manifest.xml", encodeUtf8(patched));
     }
   }
 
@@ -224,7 +224,7 @@ function cleanedOpf(opfXml: string) {
         // link a file to a purchase. Replace it with a value derived one-way
         // from the original so it stays unique without leaking it.
         const original = element.textContent ?? "";
-        const derived = createHash("sha256").update(original, "utf8").digest("hex").slice(0, 32);
+        const derived = sha256Hex(encodeUtf8(original)).slice(0, 32);
         while (element.firstChild) element.removeChild(element.firstChild);
         element.appendChild(document.createTextNode(`urn:freshfile:${derived}`));
         continue;
@@ -255,7 +255,7 @@ function cleanedOpf(opfXml: string) {
   return serializeXml(document);
 }
 
-export function cleanEpubPackage(buffer: Buffer): Buffer {
+export function cleanEpubPackage(buffer: Uint8Array): Uint8Array {
   const entries = readZipEntries(buffer);
   const byName = entryMap(entries);
   const container = byName.get("META-INF/container.xml");
@@ -263,14 +263,14 @@ export function cleanEpubPackage(buffer: Buffer): Buffer {
     throw new OfficeCleanerError("Not a valid EPUB package.");
   }
 
-  const opfPath = opfPathFromContainer(readZipEntryData(container).toString("utf8"));
+  const opfPath = opfPathFromContainer(decodeUtf8(readZipEntryData(container)));
   const opfEntry = byName.get(opfPath);
   if (!opfEntry) {
     throw new OfficeCleanerError("EPUB package document is missing.");
   }
 
-  const replace = new Map<string, Buffer>();
-  replace.set(opfPath, Buffer.from(cleanedOpf(readZipEntryData(opfEntry).toString("utf8")), "utf8"));
+  const replace = new Map<string, Uint8Array>();
+  replace.set(opfPath, encodeUtf8(cleanedOpf(decodeUtf8(readZipEntryData(opfEntry)))));
 
   return rebuildZip(entries, { replace });
 }
@@ -358,12 +358,12 @@ export function cleanRtfText(text: string): string {
 export const OOXML_FORMATS = new Set(["docx", "xlsx", "pptx"]);
 export const ODF_FORMATS = new Set(["odt", "ods", "odp"]);
 
-export function cleanOfficeBuffer(buffer: Buffer, format: string): Buffer {
+export function cleanOfficeBuffer(buffer: Uint8Array, format: string): Uint8Array {
   try {
     if (OOXML_FORMATS.has(format)) return cleanOoxmlPackage(buffer);
     if (ODF_FORMATS.has(format)) return cleanOdfPackage(buffer);
     if (format === "epub") return cleanEpubPackage(buffer);
-    if (format === "rtf") return Buffer.from(cleanRtfText(buffer.toString("latin1")), "latin1");
+    if (format === "rtf") return encodeLatin1(cleanRtfText(decodeLatin1(buffer)));
   } catch (error) {
     if (error instanceof ZipRewriteError || error instanceof OfficeCleanerError) {
       throw new OfficeCleanerError(error.message);
