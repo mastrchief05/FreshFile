@@ -9,7 +9,7 @@
 # ExifTool types OOXML/ODF documents as plain ZIP and reports none of their
 # XML metadata, silently weakening post-clean validation. libio-string-perl
 # (IO::String) covers the same decoding when ExifTool reads from a pipe.
-FROM node:22-bookworm-slim AS tools
+FROM node:26-bookworm-slim AS tools
 ENV EXIFTOOL_VERSION=13.59
 ENV EXIFTOOL_SHA256=87d3317882fdae9cb4dcfe57a96a378d0132ffc02c731315bf128b19ddcf7aac
 ENV EXIFTOOL_PATH=/opt/exiftool/exiftool
