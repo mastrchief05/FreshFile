@@ -13,12 +13,12 @@ website runs, published so you can verify it, run it locally, and build on it.
 
 ```sh
 brew tap mastrchief05/tap
+brew trust mastrchief05/tap   # newer Homebrew asks once per third-party tap
 brew install freshfile
 ```
 
 Everything included: Homebrew pulls ExifTool, FFmpeg, ImageMagick and qpdf
-along with the CLI. (One-liner: `brew install mastrchief05/tap/freshfile`.)
-Then:
+along with the CLI. Then:
 
 ```sh
 freshfile clean vacation.jpg          # writes fresh_vacation.jpg next to it
