@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # TypeScript 7 (the Go-based compiler) has a new API that tsup's bundled
+      # rollup-plugin-dts cannot drive yet (dts build crashes). Revisit once
+      # tsup supports it, then drop tsconfig's ignoreDeprecations with it.
+      - dependency-name: typescript
+        versions: [">=7"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
