@@ -104,6 +104,26 @@ export function categorizeBrowserRemoved(removed: string[]): MetadataCategory[] 
       found.add("comments");
     } else if (t === "time") {
       found.add("dates");
+    } else if (t === "documentproperties") {
+      // Office package properties: author, company/software, edit timestamps.
+      found.add("document");
+      found.add("author");
+      found.add("software");
+      found.add("dates");
+    } else if (t === "epubmetadata") {
+      found.add("document");
+      found.add("author");
+      found.add("dates");
+    } else if (t === "rtfmetadata") {
+      found.add("document");
+      found.add("author");
+      found.add("software");
+    } else if (t === "svgmetadata") {
+      found.add("svg");
+    } else if (t === "id3" || t === "ape" || t === "vorbiscomment" || t === "flacpicture") {
+      // Audio tag blocks: artist/title/comments and often cover art.
+      found.add("author");
+      found.add("comments");
     } else if (t.startsWith("app") || t.includes("iccp") || t === "iptc") {
       found.add("metadata");
     } else {

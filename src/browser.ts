@@ -1,6 +1,6 @@
-// freshfile/browser — the pieces that run inside a web page. Pure byte-level
-// JPEG/PNG/WebP cleaning with zero dependencies; nothing here imports Node
-// built-ins, so bundlers can ship it to the client as-is.
+// freshfile/browser — the pieces that run inside a web page. Byte-level image
+// and audio cleaning plus package-level document cleaning; nothing here
+// imports Node built-ins, so bundlers can ship it to the client as-is.
 
 export {
   cleanImageInBrowser,
@@ -12,6 +12,14 @@ export {
   type BrowserImageKind,
   type ClientCleanResult
 } from "./client-image-cleaner";
+
+export {
+  cleanDocumentInBrowser,
+  detectBrowserDocumentKind,
+  ClientDocumentError,
+  type BrowserDocumentKind,
+  type ClientDocumentResult
+} from "./client-document-cleaner";
 
 export { createZip, type ZipEntry } from "./client-zip";
 
