@@ -66,17 +66,17 @@ jobs:
   homebrew:
     needs: npm
     runs-on: ubuntu-latest
-    # Requires a TAP_GITHUB_TOKEN secret (classic PAT with repo scope for
-    # mastrchief05/homebrew-tap). Skipped gracefully while it is missing.
+    # Pushes via the TAP_DEPLOY_KEY secret (SSH deploy key scoped to
+    # mastrchief05/homebrew-tap only). Skipped gracefully while it is missing.
     continue-on-error: true
     steps:
       - name: Bump formula in homebrew-tap
         env:
-          TAP_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
         run: |
           set -euo pipefail
-          if [ -z "${TAP_TOKEN}" ]; then
-            echo "TAP_GITHUB_TOKEN not configured; skipping formula bump."
+          if [ -z "${TAP_DEPLOY_KEY}" ]; then
+            echo "TAP_DEPLOY_KEY not configured; skipping formula bump."
             exit 0
           fi
           VERSION="${GITHUB_REF_NAME#v}"
@@ -86,10 +86,19 @@ jobs:
             curl -fsSL "$URL" -o freshfile.tgz && break || sleep 15
           done
           SHA256=$(sha256sum freshfile.tgz | cut -d' ' -f1)
-          git clone "https://x-access-token:${TAP_TOKEN}@github.com/${GITHUB_REPOSITORY_OWNER}/homebrew-tap.git"
+          mkdir -p ~/.ssh
+          printf '%s\n' "${TAP_DEPLOY_KEY}" > ~/.ssh/tap_key
+          chmod 600 ~/.ssh/tap_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/tap_key"
+          git clone "git@github.com:${GITHUB_REPOSITORY_OWNER}/homebrew-tap.git"
           cd homebrew-tap
           sed -i -E "s|^  url \".*\"$|  url \"${URL}\"|" Formula/freshfile.rb
           sed -i -E "s|^  sha256 \".*\"$|  sha256 \"${SHA256}\"|" Formula/freshfile.rb
+          if git diff --quiet; then
+            echo "Formula already up to date."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -am "freshfile ${VERSION}"
