@@ -5,18 +5,23 @@
 # ExifTool is pinned from the official upstream tag: Debian bookworm ships
 # 12.57, which cannot read ADTS AAC ("Unknown file type"). The pinned version
 # matches what the test suite runs against.
+# libarchive-zip-perl (Archive::Zip) is required, not optional: without it
+# ExifTool types OOXML/ODF documents as plain ZIP and reports none of their
+# XML metadata, silently weakening post-clean validation. libio-string-perl
+# (IO::String) covers the same decoding when ExifTool reads from a pipe.
 FROM node:22-bookworm-slim AS tools
 ENV EXIFTOOL_VERSION=13.59
 ENV EXIFTOOL_SHA256=87d3317882fdae9cb4dcfe57a96a378d0132ffc02c731315bf128b19ddcf7aac
 ENV EXIFTOOL_PATH=/opt/exiftool/exiftool
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl perl ffmpeg imagemagick qpdf \
+  && apt-get install -y --no-install-recommends ca-certificates curl perl libarchive-zip-perl libio-string-perl ffmpeg imagemagick qpdf \
   && curl -fsSL "https://github.com/exiftool/exiftool/archive/refs/tags/${EXIFTOOL_VERSION}.tar.gz" -o /tmp/exiftool.tar.gz \
   && echo "${EXIFTOOL_SHA256}  /tmp/exiftool.tar.gz" | sha256sum -c - \
   && mkdir -p /opt/exiftool \
   && tar -xzf /tmp/exiftool.tar.gz -C /opt/exiftool --strip-components=1 \
   && rm /tmp/exiftool.tar.gz \
   && /opt/exiftool/exiftool -ver \
+  && perl -MArchive::Zip -MIO::String -e 1 \
   && apt-get purge -y curl \
   && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/*
