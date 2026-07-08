@@ -31,5 +31,5 @@ integration suite inside the Docker image with the pinned tool versions.
 - **A file that doesn't clean:** please attach the `freshfile inspect --json`
   output and the exact error — but **never upload a private file**. Reproduce
   with a synthetic file if you can (e.g. created via `exiftool -Artist=x`).
-- **Security issues:** please do not open a public issue. See the contact in
-  the repository profile instead.
+- **Security issues:** please do not open a public issue. Use GitHub's
+  private vulnerability reporting instead — see [SECURITY.md](SECURITY.md).

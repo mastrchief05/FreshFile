@@ -1,0 +1,28 @@
+name: Tool drift
+
+# The engine pins ExifTool 13.59 in Docker, but Homebrew users get whatever
+# brew ships (e.g. 13.55). This weekly run executes the integration suite on
+# macOS against the latest brew tool versions, so parsing/behavior drift shows
+# up here before users hit it.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  brew-latest:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install latest tools from Homebrew
+        run: brew install exiftool ffmpeg imagemagick qpdf
+      - run: npm ci
+      - name: Report tool versions
+        run: |
+          npm run build
+          node dist/cli.js doctor
+      - run: npm run test:integration
