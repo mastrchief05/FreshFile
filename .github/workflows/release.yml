@@ -37,7 +37,7 @@ jobs:
       - name: Pack tarball for the GitHub release
         run: npm pack
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: freshfile-*.tgz
           generate_release_notes: true
