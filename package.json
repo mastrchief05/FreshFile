@@ -1,0 +1,63 @@
+{
+  "name": "freshfile",
+  "version": "1.0.0",
+  "description": "Remove metadata from images, videos, audio, PDFs and office documents without changing what people see or hear. The engine behind freshfile.io.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mastrchief05/FreshFile.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mastrchief05/FreshFile/issues"
+  },
+  "homepage": "https://github.com/mastrchief05/FreshFile#readme",
+  "keywords": [
+    "metadata",
+    "exif",
+    "privacy",
+    "exiftool",
+    "gps",
+    "pdf",
+    "clean",
+    "strip"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "macos"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude 'tests/integration/**'",
+    "test:integration": "RUN_EXIFTOOL_INTEGRATION=1 RUN_MEDIA_INTEGRATION=1 vitest run tests/integration",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.8",
+    "file-type": "^22.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.9"
+  }
+}
