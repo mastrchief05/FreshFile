@@ -82,27 +82,37 @@ const result = await cleanFile(upload, originalPath, cleanedPath);
 // result.strategy, result.removedCategories, result.removedFieldCount
 ```
 
-Browser-side cleaning (JPEG/PNG/WebP, zero dependencies, no server round-trip):
+Browser-side cleaning — no server round-trip, files never leave the device:
 
 ```ts
-import { cleanImageInBrowser } from "freshfile/browser";
+import { cleanImageInBrowser, cleanMediaInBrowser, cleanDocumentInBrowser } from "freshfile/browser";
 
-const { bytes, removed } = cleanImageInBrowser(new Uint8Array(await file.arrayBuffer()));
+const bytes = new Uint8Array(await file.arrayBuffer());
+cleanImageInBrowser(bytes);                  // JPEG, PNG, WebP
+cleanMediaInBrowser(bytes, file.name);       // GIF, MP3, FLAC
+cleanDocumentInBrowser(bytes, file.name);    // DOCX/XLSX/PPTX, ODT/ODS/ODP, EPUB, SVG, RTF, TXT/MD/CSV
 ```
+
+All browser cleaners are deterministic byte/package surgery and **fail
+closed**: anything unexpected throws so callers can fall back to a server
+running the full engine with ExifTool re-validation. The integration suite
+re-inspects browser-cleaner output with ExifTool on every CI run.
 
 ## How files are cleaned
 
 | Formats | Strategy |
 | --- | --- |
-| JPEG, PNG, WebP (browser) | Byte-level segment surgery — EXIF/XMP/APP markers stripped, pixels untouched |
+| JPEG, PNG, WebP (also in-browser) | Byte-level segment surgery — EXIF/XMP/APP markers stripped, pixels untouched |
+| GIF (also in-browser) | Extension-block surgery — comments/XMP dropped, animation loop kept |
+| MP3, FLAC (also in-browser) | Tag-block surgery — ID3/APE/Lyrics3/Vorbis comments and cover art dropped, audio frames untouched |
 | JPEG, PNG, GIF, HEIC, AVIF, WebP | ExifTool `-all=`, then re-inspection of the output |
 | TIFF | ImageMagick rewrite (ExifTool cannot drop IFD0 tags), color profile restored |
 | MP4, MOV, M4V, M4A | ExifTool metadata strip + timestamp zeroing |
 | WebM, MKV, AVI, MP3, FLAC, WAV, OGG, Opus | FFmpeg stream copy — no transcoding, no quality loss |
 | PDF | ExifTool, then a full qpdf rewrite so removed metadata is not recoverable |
-| DOCX, XLSX, PPTX, ODT, ODS, ODP, EPUB | ZIP rewrite with XML sanitization |
-| SVG | XML parse, metadata/script/comment nodes dropped |
-| TXT, MD, CSV | Byte-for-byte copy (validated to carry no metadata) |
+| DOCX, XLSX, PPTX, ODT, ODS, ODP, EPUB (also in-browser) | ZIP rewrite with XML sanitization |
+| SVG (also in-browser) | XML parse, metadata/script/comment nodes dropped |
+| TXT, MD, CSV (also in-browser) | Byte-for-byte copy (validated to carry no metadata) |
 
 Every clean is followed by a validation pass: the output is re-inspected and
 the clean **fails loudly** rather than shipping a file that still carries
