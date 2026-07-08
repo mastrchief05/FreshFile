@@ -12,11 +12,13 @@ website runs, published so you can verify it, run it locally, and build on it.
 ## Install (macOS)
 
 ```sh
-brew install mastrchief05/tap/freshfile
+brew tap mastrchief05/tap
+brew install freshfile
 ```
 
-One command, everything included: Homebrew pulls ExifTool, FFmpeg,
-ImageMagick and qpdf along with the CLI. Then:
+Everything included: Homebrew pulls ExifTool, FFmpeg, ImageMagick and qpdf
+along with the CLI. (One-liner: `brew install mastrchief05/tap/freshfile`.)
+Then:
 
 ```sh
 freshfile clean vacation.jpg          # writes fresh_vacation.jpg next to it
