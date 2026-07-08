@@ -21,6 +21,14 @@ export {
   type ClientDocumentResult
 } from "./client-document-cleaner";
 
+export {
+  cleanMediaInBrowser,
+  detectBrowserMediaKind,
+  ClientMediaError,
+  type BrowserMediaKind,
+  type ClientMediaResult
+} from "./client-media-cleaner";
+
 export { createZip, type ZipEntry } from "./client-zip";
 
 export {

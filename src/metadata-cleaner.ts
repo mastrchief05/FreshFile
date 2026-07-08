@@ -151,6 +151,13 @@ const skippedGroupsPattern = /^(System|ExifTool|Composite):/;
 const allowedExact = new Set([
   "SourceFile",
   "ExifTool:ExifToolVersion",
+  // The minimal 14-byte JFIF APP0 the browser cleaner keeps: version and DPI
+  // are rendering data (like ICC), with thumbnail counts zeroed. Everything
+  // else in the JFIF group (thumbnails, extensions) stays sensitive.
+  "JFIF:JFIFVersion",
+  "JFIF:ResolutionUnit",
+  "JFIF:XResolution",
+  "JFIF:YResolution",
   "File:FileName",
   "File:Directory",
   "File:FileSize",
