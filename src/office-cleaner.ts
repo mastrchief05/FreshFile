@@ -61,16 +61,33 @@ function localName(node: XmlElement) {
 
 // --- OOXML -----------------------------------------------------------------
 
-const OOXML_THUMBNAIL_PATTERN = /^docProps\/thumbnail\.[a-z0-9]+$/i;
+// The only docProps parts OOXML defines. Anything else under docProps/ is a
+// writer-specific metadata part (e.g. Apple's docProps/meta.xml carrying a
+// <generator> fingerprint) and gets dropped wholesale.
+const OOXML_STANDARD_DOCPROPS = new Set(["docProps/core.xml", "docProps/app.xml", "docProps/custom.xml"]);
 
-function relsWithoutThumbnail(relsXml: string) {
+function relsWithoutTargets(relsXml: string, removedNames: Set<string>) {
   const document = parseXml(relsXml, "package relationships");
   const relationships = Array.from(document.getElementsByTagName("Relationship"));
   let changed = false;
   for (const relationship of relationships) {
-    const target = relationship.getAttribute("Target") ?? "";
-    if (/docProps\/thumbnail\./i.test(target)) {
+    const target = (relationship.getAttribute("Target") ?? "").replace(/^\//, "");
+    if (removedNames.has(target)) {
       relationship.parentNode?.removeChild(relationship);
+      changed = true;
+    }
+  }
+  return changed ? serializeXml(document) : null;
+}
+
+function typesWithoutParts(typesXml: string, removedNames: Set<string>) {
+  const document = parseXml(typesXml, "package content types");
+  const overrides = Array.from(document.getElementsByTagName("Override"));
+  let changed = false;
+  for (const override of overrides) {
+    const partName = (override.getAttribute("PartName") ?? "").replace(/^\//, "");
+    if (removedNames.has(partName)) {
+      override.parentNode?.removeChild(override);
       changed = true;
     }
   }
@@ -91,13 +108,23 @@ export function cleanOoxmlPackage(buffer: Buffer): Buffer {
   if (byName.has("docProps/app.xml")) replace.set("docProps/app.xml", Buffer.from(MINIMAL_APP_XML, "utf8"));
   if (byName.has("docProps/custom.xml")) replace.set("docProps/custom.xml", Buffer.from(MINIMAL_CUSTOM_XML, "utf8"));
 
-  const thumbnails = entries.filter((entry) => OOXML_THUMBNAIL_PATTERN.test(entry.name));
-  if (thumbnails.length > 0) {
-    for (const thumbnail of thumbnails) remove.add(thumbnail.name);
+  // Thumbnails and every non-standard docProps part (writer fingerprints).
+  for (const entry of entries) {
+    if (entry.name.startsWith("docProps/") && !OOXML_STANDARD_DOCPROPS.has(entry.name)) {
+      remove.add(entry.name);
+    }
+  }
+
+  if (remove.size > 0) {
     const rels = byName.get("_rels/.rels");
     if (rels) {
-      const patched = relsWithoutThumbnail(readZipEntryData(rels).toString("utf8"));
+      const patched = relsWithoutTargets(readZipEntryData(rels).toString("utf8"), remove);
       if (patched) replace.set("_rels/.rels", Buffer.from(patched, "utf8"));
+    }
+    const types = byName.get("[Content_Types].xml");
+    if (types) {
+      const patched = typesWithoutParts(readZipEntryData(types).toString("utf8"), remove);
+      if (patched) replace.set("[Content_Types].xml", Buffer.from(patched, "utf8"));
     }
   }
 

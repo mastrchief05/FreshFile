@@ -29,3 +29,11 @@ jobs:
       # Runs the integration suite inside the image, against the pinned
       # ExifTool/FFmpeg/ImageMagick/qpdf versions the runtime ships.
       - run: docker build --target test .
+      # Smoke-test the final runtime stage the way users run it.
+      - name: Runtime image smoke test
+        run: |
+          docker build -t freshfile-runtime .
+          mkdir smoke && printf 'hello freshfile' > smoke/sample.txt
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/smoke:/data" freshfile-runtime clean sample.txt
+          test -f smoke/fresh_sample.txt
+          docker run --rm freshfile-runtime doctor

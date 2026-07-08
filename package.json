@@ -1,6 +1,6 @@
 {
   "name": "freshfile",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Remove metadata from images, videos, audio, PDFs and office documents without changing what people see or hear. The engine behind freshfile.io.",
   "license": "MIT",
   "repository": {

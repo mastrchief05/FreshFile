@@ -142,6 +142,31 @@ describe("office cleaner", () => {
     expect(entryText(cleaned, "_rels/.rels")).toContain("word/document.xml");
   });
 
+  it("drops non-standard docProps parts like Apple's meta.xml, including their references", () => {
+    const docx = buildZip([
+      {
+        name: "[Content_Types].xml",
+        data: `<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/meta.xml" ContentType="application/xml"/></Types>`
+      },
+      {
+        name: "_rels/.rels",
+        data: `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId4" Type="http://schemas.apple.com/cocoa/2006/metadata" Target="docProps/meta.xml"/></Relationships>`
+      },
+      { name: "word/document.xml", data: DOCX_DOCUMENT },
+      {
+        name: "docProps/meta.xml",
+        data: `<meta xmlns="http://schemas.apple.com/cocoa/2006/metadata"><generator>CocoaOOXMLWriter/2685.6</generator></meta>`
+      }
+    ]);
+
+    const cleaned = cleanOoxmlPackage(docx);
+
+    expect(entryText(cleaned, "docProps/meta.xml")).toBeNull();
+    expect(entryText(cleaned, "word/document.xml")).toBe(DOCX_DOCUMENT);
+    expect(entryText(cleaned, "_rels/.rels")).not.toContain("meta.xml");
+    expect(entryText(cleaned, "[Content_Types].xml")).not.toContain("meta.xml");
+  });
+
   it("cleans ODF meta.xml and thumbnails while preserving mimetype-first stored layout", () => {
     const content = `<?xml version="1.0"?><office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"><office:body/></office:document-content>`;
     const odt = buildZip([
