@@ -6,6 +6,7 @@
 
 import { bytesStartWith, decodeLatin1, decodeUtf8, encodeUtf8 } from "./bytes";
 import { cleanOfficeBuffer, ODF_FORMATS, OOXML_FORMATS, OfficeCleanerError } from "./office-cleaner";
+import { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
 import { cleanSvg, SvgCleanerError, validateSvgOutput } from "./svg-cleaner";
 import { readZipEntries, ZipRewriteError } from "./zip-rewriter";
 
@@ -121,9 +122,10 @@ export function cleanDocumentInBrowser(bytes: Uint8Array, filename: string): Cli
     if (ZIP_KINDS.has(kind)) {
       const removed = removedTokensForZip(bytes, kind);
       const cleaned = cleanOfficeBuffer(bytes, kind);
-      // The rebuilt package must still parse; a corrupt result must never be
-      // handed to the user as "clean".
-      readZipEntries(cleaned);
+      // Same fail-closed verifier the server runs: the rebuilt package must
+      // parse, contain no forbidden parts, and carry no metadata remnants —
+      // a doubtful result must never be handed to the user as "clean".
+      verifyCleanedOfficeBytes(cleaned, kind);
       return { bytes: cleaned, kind, strategy: "package-rewrite", removed };
     }
 
@@ -137,6 +139,7 @@ export function cleanDocumentInBrowser(bytes: Uint8Array, filename: string): Cli
       const text = decodeLatin1(bytes);
       const hadMetadata = /\{\\info|\{\\\*\\generator/.test(text);
       const cleaned = cleanOfficeBuffer(bytes, "rtf");
+      verifyCleanedOfficeBytes(cleaned, "rtf");
       return {
         bytes: cleaned,
         kind,
@@ -148,7 +151,12 @@ export function cleanDocumentInBrowser(bytes: Uint8Array, filename: string): Cli
     // Plain text carries no hidden metadata; the copy IS the clean.
     return { bytes, kind, strategy: "copy-no-metadata", removed: [] };
   } catch (error) {
-    if (error instanceof OfficeCleanerError || error instanceof ZipRewriteError || error instanceof SvgCleanerError) {
+    if (
+      error instanceof OfficeCleanerError ||
+      error instanceof ZipRewriteError ||
+      error instanceof SvgCleanerError ||
+      error instanceof PackageVerificationError
+    ) {
       throw new ClientDocumentError(error.message);
     }
     throw error;

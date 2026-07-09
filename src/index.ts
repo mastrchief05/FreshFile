@@ -73,4 +73,5 @@ export { cleanVideoMetadata, inspectVideoMetadata, validateCleanedVideo, VideoVa
 export { cleanAudioMetadata, validateCleanedAudio } from "./audio-cleaner";
 export { cleanDocumentMetadata, inspectDocumentMetadata, PLAIN_TEXT_FORMATS, validateCleanedDocument } from "./document-cleaner";
 export { cleanOfficeBuffer, ODF_FORMATS, OfficeCleanerError, OOXML_FORMATS } from "./office-cleaner";
+export { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
 export { cleanSvg, SvgCleanerError, validateSvgOutput } from "./svg-cleaner";

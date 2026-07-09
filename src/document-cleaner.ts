@@ -5,6 +5,7 @@ import type { ToolRunner } from "./media-tool-runner";
 import { defaultQpdfRunner } from "./media-tool-runner";
 import { findSensitiveMetadataKeys, inspectImageMetadata, MetadataValidationError } from "./metadata-cleaner";
 import { cleanOfficeBuffer, ODF_FORMATS, OOXML_FORMATS } from "./office-cleaner";
+import { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
 
 export type DocumentCleanerOptions = {
   runner?: ExifToolRunner;
@@ -89,6 +90,22 @@ export async function validateCleanedDocument(
       const cleanedBytes = await fs.readFile(cleanedPath);
       if (cleanedBytes.includes("%BeginExifToolUpdate")) {
         throw new MetadataValidationError("PDF still contains recoverable pre-clean metadata.");
+      }
+    }
+
+    if (options.format && packageRewriteFormats.has(options.format)) {
+      // Second, ExifTool-independent validation layer. The ExifTool inspection
+      // below is only as strong as the environment's ExifTool build (a missing
+      // optional Perl module silently blinds it), so package formats are
+      // additionally verified structurally from the bytes alone.
+      const cleanedBytes = await fs.readFile(cleanedPath);
+      try {
+        verifyCleanedOfficeBytes(cleanedBytes, options.format);
+      } catch (error) {
+        if (error instanceof PackageVerificationError) {
+          throw new MetadataValidationError(error.message);
+        }
+        throw error;
       }
     }
 

@@ -118,6 +118,16 @@ Every clean is followed by a validation pass: the output is re-inspected and
 the clean **fails loudly** rather than shipping a file that still carries
 sensitive fields or lost visual integrity.
 
+Document packages get a second, independent validation layer on top of the
+ExifTool inspection: `verifyCleanedOfficeBytes` re-derives from the bytes
+alone — with its own ZIP parser and its own per-format policy — that the
+cleaned package contains exactly the structure the cleaner guarantees (no
+forbidden parts, empty property parts, epoch timestamps, no foreign bytes
+hiding between entries). ExifTool degrades gracefully when an environment
+lacks one of its optional capabilities; this layer exists so that a blind
+inspector can never silently weaken the validation. It runs on the server and
+in the browser.
+
 ### Why ExifTool is pinned
 
 The Docker image installs ExifTool 13.59 from the official upstream tag

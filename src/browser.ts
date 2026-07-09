@@ -31,6 +31,8 @@ export {
 
 export { createZip, type ZipEntry } from "./client-zip";
 
+export { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
+
 export {
   CATEGORY_LABELS,
   categorizeBrowserRemoved,

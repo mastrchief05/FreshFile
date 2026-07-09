@@ -130,8 +130,10 @@ describe.skipIf(!runIntegration)("ExifTool environment parity (ZIP-based documen
   });
 
   it("rejects an uncleaned DOCX instead of silently passing it", async () => {
+    // Both validation layers reject this file; the structural layer fires
+    // first with its own message, so the assertion covers either reason.
     await expect(validateCleanedDocument(dirtyDocx, dirtyDocx, { format: "docx" })).rejects.toThrow(
-      /Privacy metadata remained/
+      /survived cleaning|DOS epoch|Privacy metadata remained/
     );
   });
 

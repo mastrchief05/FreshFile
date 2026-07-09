@@ -79,6 +79,12 @@ export function readZipEntries(bytes: Uint8Array): ZipEntry[] {
   }
 
   const entries: ZipEntry[] = [];
+  const seenNames = new Set<string>();
+  // Non-overlapping entry data can never exceed the archive size. Bounding the
+  // cumulative compressed bytes rejects a central directory whose entries all
+  // point at the same large region — a small file that would otherwise make
+  // the per-entry slice() copies allocate gigabytes (memory-exhaustion DoS).
+  let totalCompressed = 0;
   let offset = centralDirectoryOffset;
 
   for (let index = 0; index < totalEntries; index += 1) {
@@ -118,10 +124,36 @@ export function readZipEntries(bytes: Uint8Array): ZipEntry[] {
     if (dataEnd > bytes.length) {
       throw new ZipRewriteError("Entry data out of bounds.");
     }
+    totalCompressed += compressedSize;
+    if (totalCompressed > bytes.length) {
+      throw new ZipRewriteError("ZIP entry data exceeds archive size.");
+    }
+
+    const name = decodeUtf8(nameBytes);
+    // Reject malformed names up front so cleaning fails with a clean input
+    // rejection instead of producing output the verifier later refuses. A
+    // backslash, leading slash, ".." segment, NUL, or empty name has no place
+    // in a real OOXML/ODF/EPUB package and enables path confusion downstream.
+    if (
+      name.length === 0 ||
+      name.includes("\0") ||
+      name.includes("\\") ||
+      name.startsWith("/") ||
+      name.split("/").includes("..")
+    ) {
+      throw new ZipRewriteError("Suspicious ZIP entry name.");
+    }
+    // Duplicate names let a reader and the cleaner disagree on which entry is
+    // authoritative (a metadata-smuggling channel); reject them.
+    const lowerName = name.toLowerCase();
+    if (seenNames.has(lowerName)) {
+      throw new ZipRewriteError("Duplicate ZIP entry names.");
+    }
+    seenNames.add(lowerName);
 
     entries.push({
       nameBytes,
-      name: decodeUtf8(nameBytes),
+      name,
       compressionMethod,
       crc32: crc,
       compressedSize,
