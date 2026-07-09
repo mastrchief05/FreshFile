@@ -23,6 +23,7 @@ const IMAGE_SEPARATOR = 0x2c;
 const TRAILER = 0x3b;
 const LABEL_COMMENT = 0xfe;
 const LABEL_APPLICATION = 0xff;
+const LABEL_GRAPHIC_CONTROL = 0xf9;
 
 // Application identifiers (11 bytes) that control animation playback and must
 // survive; every other application extension is metadata (XMP, ICC, …).
@@ -79,10 +80,14 @@ export function cleanGif(bytes: Uint8Array): GifCleanResult {
         } else {
           removed.push(appId.includes("XMP") ? "xmp" : `app:${appId}`);
         }
-      } else {
-        // Graphic control, plain text, and unknown labels stay: they affect
-        // rendering, not privacy.
+      } else if (label === LABEL_GRAPHIC_CONTROL) {
+        // Frame timing / transparency: required for correct rendering.
         kept.push(bytes.subarray(cursor, end));
+      } else {
+        // Plain-text (0x01) and any unknown extension label are a hidden-data
+        // channel; the GIF spec requires decoders to skip unknown extensions,
+        // so dropping them is render-safe.
+        removed.push(`ext:0x${label.toString(16).padStart(2, "0")}`);
       }
       cursor = end;
       continue;

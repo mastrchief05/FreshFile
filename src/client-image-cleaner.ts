@@ -158,13 +158,15 @@ export function cleanJpeg(bytes: Uint8Array): ClientCleanResult {
   let offset = 2;
 
   for (;;) {
-    if (offset + 4 > bytes.length) throw new ClientCleanError("Truncated JPEG.");
+    // A marker is two bytes (0xFF + code); EOI/RSTn carry no length, so only
+    // require two bytes here and check the 2-byte length field per segment.
+    if (offset + 2 > bytes.length) throw new ClientCleanError("Truncated JPEG.");
     if (bytes[offset] !== 0xff) throw new ClientCleanError("Corrupt JPEG marker stream.");
     let marker = bytes[offset + 1];
     // skip fill bytes
     while (marker === 0xff) {
       offset += 1;
-      if (offset + 4 > bytes.length) throw new ClientCleanError("Truncated JPEG.");
+      if (offset + 2 > bytes.length) throw new ClientCleanError("Truncated JPEG.");
       marker = bytes[offset + 1];
     }
 
@@ -173,10 +175,42 @@ export function cleanJpeg(bytes: Uint8Array): ClientCleanResult {
       throw new ClientCleanError("Unexpected JPEG marker.");
     }
 
-    if (marker === 0xda) {
-      // SOS: entropy-coded data follows — copy the rest verbatim (incl. EOI).
-      parts.push(bytes.subarray(offset));
+    if (marker === 0xd9) {
+      // EOI: the image ends here. Anything after it (a Motion-Photo MP4, a
+      // stego blob, an exfil trailer) is dropped rather than copied verbatim.
+      parts.push(bytes.subarray(offset, offset + 2));
+      if (offset + 2 < bytes.length) removed.push("Trailing data after EOI");
       break;
+    }
+
+    if (offset + 4 > bytes.length) throw new ClientCleanError("Truncated JPEG.");
+
+    if (marker === 0xda) {
+      // SOS: a scan header (with a length) then entropy-coded data (no length).
+      // Copy the header, then walk the entropy stream to the next real marker.
+      // Raw 0xFF in the stream is byte-stuffed as 0xFF00, and RSTn markers
+      // (0xFFD0–D7) are part of the scan; any other marker ends this scan —
+      // EOI in a baseline JPEG, or the next segment (DHT/DQT/SOS) in a
+      // progressive one, both handled by re-entering the outer loop.
+      const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
+      if (length < 2 || offset + 2 + length > bytes.length) {
+        throw new ClientCleanError("Corrupt JPEG segment length.");
+      }
+      let scan = offset + 2 + length;
+      while (scan + 1 < bytes.length) {
+        if (bytes[scan] === 0xff) {
+          const next = bytes[scan + 1];
+          if (next === 0x00 || next === 0xff || (next >= 0xd0 && next <= 0xd7)) {
+            scan += 1;
+            continue;
+          }
+          break;
+        }
+        scan += 1;
+      }
+      parts.push(bytes.subarray(offset, scan));
+      offset = scan;
+      continue;
     }
 
     const length = (bytes[offset + 2] << 8) | bytes[offset + 3];

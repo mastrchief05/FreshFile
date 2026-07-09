@@ -25,6 +25,9 @@ const blockedElements = new Set([
   "rdf:rdf",
   "rdf",
   "desc",
+  // <title> is a tooltip/accessibility label, not visible artwork, and a
+  // common author/description metadata channel — dropped like <desc>.
+  "title",
   // XML Events scripting element — pure behavior, no visible artwork.
   "handler"
 ]);
@@ -105,9 +108,19 @@ function sanitizeAttributes(element: XmlElement) {
     const localAttributeName = localName(attribute.name);
     const value = attribute.value;
 
-    if (["xmlns:rdf", "xmlns:dc", "xmlns:cc"].includes(name)) {
-      attributesToRemove.push(attribute.name);
-      continue;
+    // Namespace policy: keep only the SVG default namespace plus a tiny
+    // allowlist of safe prefixes (xml, xlink). Everything else — editor and
+    // metadata namespaces (sodipodi, inkscape, Adobe i:/x:, sketch, dc, cc,
+    // rdf, …) and their xmlns declarations — is stripped, closing channels
+    // like sodipodi:docname (the original filename) and inkscape:label.
+    const colon = name.indexOf(":");
+    if (colon > 0) {
+      const rawPrefix = name.slice(0, colon);
+      const declaredPrefix = rawPrefix === "xmlns" ? name.slice(colon + 1) : rawPrefix;
+      if (declaredPrefix !== "xml" && declaredPrefix !== "xlink") {
+        attributesToRemove.push(attribute.name);
+        continue;
+      }
     }
 
     if (name.startsWith("on") || localAttributeName.startsWith("on")) {
@@ -194,7 +207,7 @@ export function validateSvgOutput(svg: string) {
     throw new SvgCleanerError("Sanitized output is not an SVG.");
   }
 
-  if (/<(?:[a-z0-9_-]+:)?(?:script|metadata|foreignobject|handler)\b|(?:^|\s)(?:[a-z0-9_-]+:)?on[a-z0-9_-]+\s*=|javascript:|<!doctype|<!--/i.test(svg)) {
+  if (/<(?:[a-z0-9_-]+:)?(?:script|metadata|foreignobject|handler|title|desc)\b|(?:^|\s)(?:[a-z0-9_-]+:)?on[a-z0-9_-]+\s*=|javascript:|<!doctype|<!--/i.test(svg)) {
     throw new SvgCleanerError("Sanitized SVG still contains unsafe content.");
   }
 

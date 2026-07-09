@@ -9,6 +9,12 @@ import type { FileCategory } from "./job-types";
 
 export type ConfigurableTool = "exiftool" | "ffmpeg" | "ffprobe" | "imagemagick" | "qpdf";
 
+// Cap on bytes accumulated from a spawned tool's stdout+stderr. Legitimate
+// output (metadata JSON, tool diagnostics) is kilobytes; the cap bounds worker
+// memory so a crafted input that makes a tool emit hundreds of MB cannot OOM
+// the process — the wall-clock timeout does not bound memory.
+export const MAX_TOOL_OUTPUT_BYTES = 64 * 1024 * 1024;
+
 export type MaxUploadBytes = number | ((category: FileCategory) => number);
 
 export type FreshfileConfig = {

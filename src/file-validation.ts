@@ -419,12 +419,20 @@ function selectDefinition(buffer: Buffer, filenameExtension: string, detectedExt
     return extensionDefinition;
   }
 
-  if (matchesTextualFallback(extensionDefinition, buffer)) {
-    return extensionDefinition;
-  }
-
-  if (matchesContainerFallback(extensionDefinition, buffer, detectedExt, detectedMime)) {
-    return extensionDefinition;
+  // Only fall back to content sniffing when file-type recognized NO supported
+  // format. Otherwise a binary that file-type positively identifies (e.g. a
+  // PDF or RTF) but that is named .txt/.md/.csv would pass the textual
+  // fallback — which merely checks the head for the absence of NUL bytes — and
+  // be "cleaned" as plain text: a byte-for-byte copy that silently keeps all
+  // its embedded metadata. A detected mismatch must fall through to null so
+  // validateUploadedFile raises suspicious_file instead.
+  if (detectedDefinitions.length === 0) {
+    if (matchesTextualFallback(extensionDefinition, buffer)) {
+      return extensionDefinition;
+    }
+    if (matchesContainerFallback(extensionDefinition, buffer, detectedExt, detectedMime)) {
+      return extensionDefinition;
+    }
   }
 
   return null;

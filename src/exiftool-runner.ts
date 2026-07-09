@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { getToolPath } from "./config";
+import { getToolPath, MAX_TOOL_OUTPUT_BYTES } from "./config";
 
 export type ExifToolResult = {
   stdout: string;
@@ -29,6 +29,7 @@ export const defaultExifToolRunner: ExifToolRunner = (args, options = {}) =>
 
     let stdout = "";
     let stderr = "";
+    let totalBytes = 0;
     let settled = false;
 
     const timeout = setTimeout(() => {
@@ -37,14 +38,27 @@ export const defaultExifToolRunner: ExifToolRunner = (args, options = {}) =>
       reject(new ExifToolError("ExifTool timed out.", "timeout"));
     }, timeoutMs);
 
+    // Legitimate ExifTool JSON for one file is kilobytes. Bounding the
+    // accumulated output stops a crafted input (e.g. a PNG whose zTXt chunk
+    // inflates to hundreds of MB of tag text) from OOM-ing the worker; the
+    // wall-clock timeout alone does not bound memory.
+    const guard = (chunk: string, append: (value: string) => void) => {
+      if (settled) return;
+      totalBytes += Buffer.byteLength(chunk);
+      if (totalBytes > MAX_TOOL_OUTPUT_BYTES) {
+        settled = true;
+        clearTimeout(timeout);
+        child.kill("SIGKILL");
+        reject(new ExifToolError("ExifTool produced too much output.", "failed"));
+        return;
+      }
+      append(chunk);
+    };
+
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk;
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk;
-    });
+    child.stdout.on("data", (chunk: string) => guard(chunk, (value) => (stdout += value)));
+    child.stderr.on("data", (chunk: string) => guard(chunk, (value) => (stderr += value)));
 
     child.on("error", (error: NodeJS.ErrnoException) => {
       if (settled) return;

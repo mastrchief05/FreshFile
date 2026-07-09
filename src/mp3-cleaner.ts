@@ -73,6 +73,19 @@ function stripTrailingTags(bytes: Uint8Array, endExclusive: number, removed: str
       continue;
     }
 
+    // ID3v2.4 permits a tag APPENDED at the end of the file, located by a
+    // 10-byte footer whose magic is "3DI" (the header magic "ID3" reversed).
+    // Without this, a [audio][ID3v2.4 header][frames][3DI footer] layout keeps
+    // the entire tag — GEOB/GPS, artist, COMM, encoder — in a "clean" file.
+    if (end >= 20 && decodeLatin1(bytes.subarray(end - 10, end - 7)) === "3DI") {
+      const size = synchsafeSize(bytes, end - 4);
+      const total = size + 20; // 10-byte header + tag data + 10-byte footer
+      if (total <= 0 || total > end) throw new Mp3CleanError("Corrupt appended ID3v2 tag.");
+      end -= total;
+      removed.push("id3");
+      continue;
+    }
+
     // Lyrics3v2: "…LYRICS200" preceded by a 6-digit size of the block.
     if (end >= 15 && decodeLatin1(bytes.subarray(end - 9, end)) === "LYRICS200") {
       const sizeText = decodeLatin1(bytes.subarray(end - 15, end - 9));

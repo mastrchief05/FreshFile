@@ -60,7 +60,23 @@ export function buildImageMagickStripArgs(inputPath: string, outputPath: string)
   // Rewrite the raster and drop every metadata profile/tag ImageMagick knows,
   // including the IFD0 tags (Artist/Software/Copyright/ImageDescription) that
   // ExifTool cannot delete from a TIFF. Pixels are preserved bit-for-bit.
-  return [inputPath, "-strip", outputPath];
+  //
+  // The -limit flags MUST precede the input: ImageMagick applies them as it
+  // reads arguments, so they only bound the decode if set first. A 138-byte
+  // TIFF declaring 50000x50000 pixels otherwise forces a ~10 GB allocation
+  // (pixel bomb) before libtiff errors — a single-upload OOM of the worker.
+  return [
+    "-limit", "area", "128MP",
+    "-limit", "width", "50000",
+    "-limit", "height", "50000",
+    "-limit", "memory", "512MiB",
+    "-limit", "map", "512MiB",
+    "-limit", "disk", "1GiB",
+    "-limit", "thread", "1",
+    inputPath,
+    "-strip",
+    outputPath
+  ];
 }
 
 export function buildTiffColorRestoreArgs(originalPath: string, outputPath: string) {

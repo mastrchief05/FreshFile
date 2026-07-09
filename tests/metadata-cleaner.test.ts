@@ -218,7 +218,10 @@ describe("TIFF cleaner", () => {
 
     await cleanTiffMetadata("/tmp/in.tiff", "/tmp/out.tiff", { imageMagickRunner, exifToolRunner });
 
-    expect(calls[0]).toEqual({ tool: "magick", args: ["/tmp/in.tiff", "-strip", "/tmp/out.tiff"] });
+    // Resource limits precede the input (pixel-bomb guard), then strip.
+    expect(calls[0].tool).toBe("magick");
+    expect(calls[0].args.slice(-3)).toEqual(["/tmp/in.tiff", "-strip", "/tmp/out.tiff"]);
+    expect(calls[0].args).toContain("-limit");
     expect(calls[1].tool).toBe("exiftool");
     // Colour restore must read from the ORIGINAL, never re-add sensitive tags.
     expect(calls[1].args).toEqual([
