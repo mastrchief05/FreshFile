@@ -4,19 +4,23 @@ on:
   push:
     tags: ["v*"]
 
+# Least privilege: the default token is read-only; each job requests only the
+# scopes it needs (npm publishes with provenance + creates the GitHub release,
+# docker pushes to GHCR, homebrew uses its own deploy key).
 permissions:
-  contents: write
-  id-token: write
-  packages: write
+  contents: read
 
 jobs:
   npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # npm provenance
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
           registry-url: https://registry.npmjs.org
       - run: npm ci
@@ -44,6 +48,9 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # push the image to GHCR
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4

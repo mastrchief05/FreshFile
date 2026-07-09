@@ -4,15 +4,23 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Lets the exiftool-update workflow run CI on its bot-created PRs, which
+  # GITHUB_TOKEN pushes do not trigger via pull_request.
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      # engines is >=22 and the shipped image tracks current: test the floor
+      # and the ceiling so both stay true.
+      matrix:
+        node: [22, 26]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
       - run: npm run typecheck

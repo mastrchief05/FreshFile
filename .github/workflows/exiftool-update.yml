@@ -1,0 +1,78 @@
+# Keeps the pinned ExifTool current: checks the newest upstream production
+# tag weekly and opens a PR bumping EXIFTOOL_VERSION + EXIFTOOL_SHA256 in the
+# Dockerfile. CI (docker build --target test) then proves the new version
+# still passes the full integration suite — including the environment-parity
+# tests — before a human merges. Complements Dependabot, which cannot track
+# tool tarballs pinned inside a Dockerfile.
+name: ExifTool update
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check for a newer ExifTool production release
+        id: probe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          current=$(sed -n 's/^ENV EXIFTOOL_VERSION=//p' Dockerfile)
+          # Production releases are even minor versions (12.76, 13.00, ...);
+          # odd minors are development snapshots and are skipped.
+          latest=$(gh api repos/exiftool/exiftool/tags --paginate --jq '.[].name' \
+            | grep -E '^[0-9]+\.[0-9]+$' \
+            | awk -F. '$2 % 2 == 0' \
+            | sort -t. -k1,1n -k2,2n | tail -1)
+          echo "current=$current latest=$latest"
+          if [ -z "$latest" ] || [ "$latest" = "$current" ]; then
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          highest=$(printf '%s\n%s\n' "$current" "$latest" | sort -t. -k1,1n -k2,2n | tail -1)
+          if [ "$highest" = "$current" ]; then
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          curl -fsSL "https://github.com/exiftool/exiftool/archive/refs/tags/${latest}.tar.gz" -o /tmp/exiftool.tar.gz
+          sha256=$(sha256sum /tmp/exiftool.tar.gz | cut -d' ' -f1)
+          echo "update=true" >> "$GITHUB_OUTPUT"
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+      - name: Open update PR
+        if: steps.probe.outputs.update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.probe.outputs.version }}
+          SHA256: ${{ steps.probe.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          branch="exiftool-update/${VERSION}"
+          if gh pr list --head "$branch" --state open --json number --jq length | grep -qv '^0$'; then
+            echo "PR for ${VERSION} already open; nothing to do."
+            exit 0
+          fi
+          sed -i -E "s/^ENV EXIFTOOL_VERSION=.*/ENV EXIFTOOL_VERSION=${VERSION}/" Dockerfile
+          sed -i -E "s/^ENV EXIFTOOL_SHA256=.*/ENV EXIFTOOL_SHA256=${SHA256}/" Dockerfile
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -am "Bump ExifTool to ${VERSION}"
+          git push origin "$branch"
+          gh pr create \
+            --title "Bump ExifTool to ${VERSION}" \
+            --body "Automated weekly check: upstream production release \`${VERSION}\` replaces the pinned version. Tarball SHA-256 verified at download time: \`${SHA256}\`. CI runs the Docker integration suite (including the ExifTool environment-parity tests) against the new version." \
+            --head "$branch"
+          # GITHUB_TOKEN pushes do not fire pull_request workflows; start CI
+          # explicitly so the PR carries real check results.
+          gh workflow run ci.yml --ref "$branch"
