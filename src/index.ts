@@ -10,9 +10,9 @@ export {
   type ConfigurableTool,
   type FreshfileConfig,
   type MaxUploadBytes
-} from "./config";
+} from "./core/config";
 
-export { cleanFile, CleaningFailedError, type CleanResult } from "./clean-file";
+export { cleanFile, CleaningFailedError, type CleanResult } from "./pipeline/clean-file";
 
 export {
   validateUploadedFile,
@@ -27,9 +27,9 @@ export {
   type FormatDefinition,
   type SupportedFormat,
   type ValidatedUpload
-} from "./file-validation";
+} from "./validation/file-validation";
 
-export type { CleanerStrategy, ErrorCategory, FileCategory } from "./job-types";
+export type { CleanerStrategy, ErrorCategory, FileCategory } from "./core/job-types";
 
 export {
   CATEGORY_LABELS,
@@ -37,7 +37,7 @@ export {
   categorizeServerKeys,
   categoryLabels,
   type MetadataCategory
-} from "./metadata-categories";
+} from "./core/metadata-categories";
 
 export {
   cleanupExpiredTempFiles,
@@ -48,9 +48,9 @@ export {
   getTempPath,
   getTempRoot,
   writeTempFile
-} from "./temp-files";
+} from "./runtime/temp-files";
 
-export { defaultExifToolRunner, ExifToolError, type ExifToolResult, type ExifToolRunner } from "./exiftool-runner";
+export { defaultExifToolRunner, ExifToolError, type ExifToolResult, type ExifToolRunner } from "./runtime/exiftool-runner";
 export {
   defaultFfmpegRunner,
   defaultFfprobeRunner,
@@ -59,7 +59,7 @@ export {
   MediaToolError,
   type ToolResult,
   type ToolRunner
-} from "./media-tool-runner";
+} from "./runtime/media-tool-runner";
 
 export {
   cleanImageMetadata,
@@ -68,10 +68,10 @@ export {
   inspectImageMetadata,
   MetadataValidationError,
   validateCleanedImage
-} from "./image-cleaner";
-export { cleanVideoMetadata, inspectVideoMetadata, validateCleanedVideo, VideoValidationError } from "./video-cleaner";
-export { cleanAudioMetadata, validateCleanedAudio } from "./audio-cleaner";
-export { cleanDocumentMetadata, inspectDocumentMetadata, PLAIN_TEXT_FORMATS, validateCleanedDocument } from "./document-cleaner";
-export { cleanOfficeBuffer, ODF_FORMATS, OfficeCleanerError, OOXML_FORMATS } from "./office-cleaner";
-export { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
-export { cleanSvg, SvgCleanerError, validateSvgOutput } from "./svg-cleaner";
+} from "./cleaners/image-cleaner";
+export { cleanVideoMetadata, inspectVideoMetadata, validateCleanedVideo, VideoValidationError } from "./cleaners/video-cleaner";
+export { cleanAudioMetadata, validateCleanedAudio } from "./cleaners/audio-cleaner";
+export { cleanDocumentMetadata, inspectDocumentMetadata, PLAIN_TEXT_FORMATS, validateCleanedDocument } from "./cleaners/document-cleaner";
+export { cleanOfficeBuffer, ODF_FORMATS, OfficeCleanerError, OOXML_FORMATS } from "./formats/office-cleaner";
+export { PackageVerificationError, verifyCleanedOfficeBytes } from "./formats/office-verifier";
+export { cleanSvg, SvgCleanerError, validateSvgOutput } from "./formats/svg-cleaner";

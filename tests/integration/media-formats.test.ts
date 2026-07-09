@@ -3,8 +3,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { cleanAudioMetadata, validateCleanedAudio } from "@/audio-cleaner";
-import { cleanVideoMetadata, validateCleanedVideo } from "@/video-cleaner";
+import { cleanAudioMetadata, validateCleanedAudio } from "@/cleaners/audio-cleaner";
+import { cleanVideoMetadata, validateCleanedVideo } from "@/cleaners/video-cleaner";
 
 // Runs only when explicitly requested and requires exiftool, ffmpeg, and ffprobe:
 //   RUN_MEDIA_INTEGRATION=1 npm test

@@ -3,10 +3,10 @@ import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { beforeAll, describe, expect, it } from "vitest";
-import { cleanDocumentMetadata, inspectDocumentMetadata, validateCleanedDocument } from "@/document-cleaner";
-import { defaultExifToolRunner } from "@/exiftool-runner";
-import { findSensitiveMetadataKeys } from "@/metadata-cleaner";
-import { crc32 } from "@/zip-rewriter";
+import { cleanDocumentMetadata, inspectDocumentMetadata, validateCleanedDocument } from "@/cleaners/document-cleaner";
+import { defaultExifToolRunner } from "@/runtime/exiftool-runner";
+import { findSensitiveMetadataKeys } from "@/cleaners/metadata-cleaner";
+import { crc32 } from "@/formats/zip-rewriter";
 
 const runIntegration = process.env.RUN_EXIFTOOL_INTEGRATION === "1";
 

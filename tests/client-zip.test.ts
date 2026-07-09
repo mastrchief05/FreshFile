@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createZip } from "@/client-zip";
-import { readZipEntries, readZipEntryData } from "@/zip-rewriter";
+import { createZip } from "@/browser/client-zip";
+import { readZipEntries, readZipEntryData } from "@/formats/zip-rewriter";
 
 async function blobToBuffer(blob: Blob): Promise<Buffer> {
   return Buffer.from(await blob.arrayBuffer());

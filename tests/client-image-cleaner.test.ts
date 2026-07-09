@@ -6,7 +6,7 @@ import {
   cleanWebp,
   ClientCleanError,
   detectBrowserImageKind
-} from "@/client-image-cleaner";
+} from "@/browser/client-image-cleaner";
 
 // Real fixtures created with ExifTool: JPEG with Orientation=6 + XMP + EXIF
 // (Software/Artist), PNG with tEXt parameters + XMP, WebP with XMP.

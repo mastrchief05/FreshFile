@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { cleanEpubPackage, cleanOfficeBuffer, cleanOoxmlPackage, cleanRtfText } from "@/office-cleaner";
-import { PackageVerificationError, verifyCleanedOfficeBytes } from "@/office-verifier";
-import { readZipEntries, readZipEntryData, rebuildZip } from "@/zip-rewriter";
-import { encodeLatin1 } from "@/bytes";
+import { cleanEpubPackage, cleanOfficeBuffer, cleanOoxmlPackage, cleanRtfText } from "@/formats/office-cleaner";
+import { PackageVerificationError, verifyCleanedOfficeBytes } from "@/formats/office-verifier";
+import { readZipEntries, readZipEntryData, rebuildZip } from "@/formats/zip-rewriter";
+import { encodeLatin1 } from "@/core/bytes";
 import { buildZip } from "./helpers/build-zip";
 
 // Regressions for the findings confirmed by the adversarial verifier review.

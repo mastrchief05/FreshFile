@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanSvg } from "@/svg-cleaner";
+import { cleanSvg } from "@/formats/svg-cleaner";
 
 describe("SVG cleaner", () => {
   it("removes metadata, RDF, comments, script, and event handlers", () => {

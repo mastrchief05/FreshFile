@@ -3,7 +3,7 @@ import {
   categorizeBrowserRemoved,
   categorizeServerKeys,
   categoryLabels
-} from "@/metadata-categories";
+} from "@/core/metadata-categories";
 
 describe("metadata categorization", () => {
   it("maps raw exiftool keys to friendly categories, GPS first", () => {

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
-import type { ExifToolRunner } from "./exiftool-runner";
-import { defaultExifToolRunner, ExifToolError } from "./exiftool-runner";
-import { defaultImageMagickRunner, type ToolRunner } from "./media-tool-runner";
+import type { ExifToolRunner } from "../runtime/exiftool-runner";
+import { defaultExifToolRunner, ExifToolError } from "../runtime/exiftool-runner";
+import { defaultImageMagickRunner, type ToolRunner } from "../runtime/media-tool-runner";
 
 export type MetadataMap = Record<string, unknown>;
 

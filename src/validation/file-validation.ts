@@ -1,8 +1,8 @@
 import path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
 import { z } from "zod";
-import { resolveMaxUploadBytes, type MaxUploadBytes } from "./config";
-import type { FileCategory } from "./job-types";
+import { resolveMaxUploadBytes, type MaxUploadBytes } from "../core/config";
+import type { FileCategory } from "../core/job-types";
 
 export type SupportedFormat =
   | "jpeg"

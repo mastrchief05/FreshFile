@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { getToolPath, MAX_TOOL_OUTPUT_BYTES } from "./config";
+import { getToolPath, MAX_TOOL_OUTPUT_BYTES } from "../core/config";
 
 export type ExifToolResult = {
   stdout: string;

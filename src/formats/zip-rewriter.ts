@@ -1,5 +1,5 @@
 import { Inflate, deflateSync } from "fflate";
-import { concatBytes, decodeUtf8, readU16LE, readU32LE, writeU16LE, writeU32LE } from "./bytes";
+import { concatBytes, decodeUtf8, readU16LE, readU32LE, writeU16LE, writeU32LE } from "../core/bytes";
 
 // Minimal ZIP reader/writer used to rewrite metadata entries inside OOXML,
 // ODF, and EPUB packages without touching any other entry's bytes.

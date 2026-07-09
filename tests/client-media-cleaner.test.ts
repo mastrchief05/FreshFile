@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { cleanGif } from "@/gif-cleaner";
-import { cleanMp3 } from "@/mp3-cleaner";
-import { cleanFlac } from "@/flac-cleaner";
-import { cleanMediaInBrowser, detectBrowserMediaKind, ClientMediaError } from "@/client-media-cleaner";
+import { cleanGif } from "@/formats/gif-cleaner";
+import { cleanMp3 } from "@/formats/mp3-cleaner";
+import { cleanFlac } from "@/formats/flac-cleaner";
+import { cleanMediaInBrowser, detectBrowserMediaKind, ClientMediaError } from "@/browser/client-media-cleaner";
 
 function ascii(text: string) {
   return Array.from(text, (char) => char.charCodeAt(0));

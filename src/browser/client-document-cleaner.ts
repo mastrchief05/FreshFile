@@ -4,11 +4,11 @@
 // confident about throws ClientDocumentError — callers are expected to fall
 // back to the server path, which re-validates with ExifTool.
 
-import { bytesStartWith, decodeLatin1, decodeUtf8, encodeUtf8 } from "./bytes";
-import { cleanOfficeBuffer, ODF_FORMATS, OOXML_FORMATS, OfficeCleanerError } from "./office-cleaner";
-import { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
-import { cleanSvg, SvgCleanerError, validateSvgOutput } from "./svg-cleaner";
-import { readZipEntries, ZipRewriteError } from "./zip-rewriter";
+import { bytesStartWith, decodeLatin1, decodeUtf8, encodeUtf8 } from "../core/bytes";
+import { cleanOfficeBuffer, ODF_FORMATS, OOXML_FORMATS, OfficeCleanerError } from "../formats/office-cleaner";
+import { PackageVerificationError, verifyCleanedOfficeBytes } from "../formats/office-verifier";
+import { cleanSvg, SvgCleanerError, validateSvgOutput } from "../formats/svg-cleaner";
+import { readZipEntries, ZipRewriteError } from "../formats/zip-rewriter";
 
 export class ClientDocumentError extends Error {
   constructor(message: string) {

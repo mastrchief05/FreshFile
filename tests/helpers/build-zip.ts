@@ -1,5 +1,5 @@
 import zlib from "node:zlib";
-import { crc32 } from "@/zip-rewriter";
+import { crc32 } from "@/formats/zip-rewriter";
 
 export type FixtureEntry = {
   name: string;

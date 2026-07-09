@@ -1,5 +1,5 @@
 import { DOMParser, type Element as XmlElement } from "@xmldom/xmldom";
-import { decodeLatin1, decodeUtf8, readU16LE, readU32LE } from "./bytes";
+import { decodeLatin1, decodeUtf8, readU16LE, readU32LE } from "../core/bytes";
 import { ODF_FORMATS, OOXML_FORMATS, resolveOpcTarget } from "./office-cleaner";
 import { readZipEntryData, type ZipEntry } from "./zip-rewriter";
 

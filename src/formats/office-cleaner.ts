@@ -1,5 +1,5 @@
 import { DOMParser, XMLSerializer, type Element as XmlElement } from "@xmldom/xmldom";
-import { decodeLatin1, decodeUtf8, encodeLatin1, encodeUtf8, sha256Hex } from "./bytes";
+import { decodeLatin1, decodeUtf8, encodeLatin1, encodeUtf8, sha256Hex } from "../core/bytes";
 import { readZipEntries, readZipEntryData, rebuildZip, ZipRewriteError, type ZipEntry } from "./zip-rewriter";
 
 // Package-level metadata cleaning for OOXML (docx/xlsx/pptx), ODF (odt/ods/odp),

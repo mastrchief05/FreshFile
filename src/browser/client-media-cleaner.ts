@@ -3,10 +3,10 @@
 // error so callers can fall back to the server path (which re-validates
 // with ExifTool) whenever anything looks unusual.
 
-import { bytesStartWith } from "./bytes";
-import { cleanFlac, FlacCleanError } from "./flac-cleaner";
-import { cleanGif, GifCleanError } from "./gif-cleaner";
-import { cleanMp3, Mp3CleanError } from "./mp3-cleaner";
+import { bytesStartWith } from "../core/bytes";
+import { cleanFlac, FlacCleanError } from "../formats/flac-cleaner";
+import { cleanGif, GifCleanError } from "../formats/gif-cleaner";
+import { cleanMp3, Mp3CleanError } from "../formats/mp3-cleaner";
 
 export class ClientMediaError extends Error {
   constructor(message: string) {

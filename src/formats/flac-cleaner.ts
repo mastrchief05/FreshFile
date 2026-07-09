@@ -4,7 +4,7 @@
 // SEEKTABLE and CUESHEET (decoding/playback data) survive. Audio frames are
 // copied verbatim. Isomorphic: no Node APIs.
 
-import { bytesStartWith, concatBytes } from "./bytes";
+import { bytesStartWith, concatBytes } from "../core/bytes";
 
 export class FlacCleanError extends Error {
   constructor(message: string) {

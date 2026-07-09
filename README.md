@@ -144,6 +144,27 @@ npm run test:integration  # needs exiftool/ffmpeg/imagemagick/qpdf installed
 npm run build
 ```
 
+### Architecture
+
+`src/` is organized into dependency layers — each layer only imports from the
+layers above it, so the flow of responsibility is one-directional:
+
+| Layer | Directory | Contents |
+|-------|-----------|----------|
+| Public API | `src/index.ts`, `src/browser.ts` | The only entry points consumers import (server / browser bundles) |
+| Entry logic | `cli/` | Command-line interface |
+| Orchestration | `pipeline/` | `clean-file` — routes an upload to the right cleaner + validator |
+| Guards | `validation/` | `file-validation` — magic-byte + extension checks before cleaning |
+| Server cleaners | `cleaners/` | Per-category cleaners that shell out to ExifTool/FFmpeg/qpdf (image, audio, video, document, metadata) |
+| Browser cleaners | `browser/` | On-device cleaners that never touch a server (`client-*`) |
+| Format codecs | `formats/` | Isomorphic, dependency-free byte handlers (ZIP, OOXML/ODF/EPUB/RTF, SVG, GIF, MP3, FLAC) — run identically on server and client |
+| Runtime adapters | `runtime/` | Node-only process/filesystem access (tool runners, temp files) |
+| Core | `core/` | Primitives with no engine dependencies (bytes, types, config, metadata categories) |
+
+The `formats/` layer is deliberately isomorphic: the exact same package cleaner
+and its independent verifier run whether a document is cleaned in the browser
+or on the server, so both paths give byte-identical output and validation.
+
 ## License
 
 [MIT](LICENSE). Extracted from the FreshFile app; the freshfile.io website

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateUploadedFile } from "@/file-validation";
+import { validateUploadedFile } from "@/validation/file-validation";
 
 const pngBytes = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",

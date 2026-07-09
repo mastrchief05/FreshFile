@@ -4,7 +4,7 @@ import {
   buildFfprobeArgs,
   buildVideoExifToolArgs,
   validateVideoProbeSnapshots
-} from "@/video-cleaner";
+} from "@/cleaners/video-cleaner";
 
 describe("video cleaner", () => {
   it("builds safe ExifTool and ffprobe argument arrays", () => {

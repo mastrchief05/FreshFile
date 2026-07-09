@@ -7,9 +7,9 @@ import {
   cleanTiffMetadata,
   inspectImageMetadata,
   validateCleanedImage
-} from "@/metadata-cleaner";
-import { defaultExifToolRunner } from "@/exiftool-runner";
-import { defaultImageMagickRunner } from "@/media-tool-runner";
+} from "@/cleaners/metadata-cleaner";
+import { defaultExifToolRunner } from "@/runtime/exiftool-runner";
+import { defaultImageMagickRunner } from "@/runtime/media-tool-runner";
 
 const runIntegration = process.env.RUN_EXIFTOOL_INTEGRATION === "1";
 
@@ -123,7 +123,7 @@ describe.skipIf(!runIntegration)("ExifTool integration formats", () => {
     await fs.writeFile(original, minimalPdf, "latin1");
     await defaultExifToolRunner(["-overwrite_original", "-Author=Private Person", "-Creator=ComfyUI", original]);
 
-    const { cleanDocumentMetadata, validateCleanedDocument } = await import("@/document-cleaner");
+    const { cleanDocumentMetadata, validateCleanedDocument } = await import("@/cleaners/document-cleaner");
     await expect(cleanDocumentMetadata(original, cleaned, { format: "pdf" })).resolves.toMatchObject({
       strategy: "pdf-rewrite"
     });

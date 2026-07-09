@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { cleanGif } from "@/gif-cleaner";
-import { cleanMp3 } from "@/mp3-cleaner";
-import { cleanFlac } from "@/flac-cleaner";
-import { cleanJpeg } from "@/client-image-cleaner";
-import { cleanSvg } from "@/svg-cleaner";
-import { cleanRtfText } from "@/office-cleaner";
-import { verifyCleanedOfficeBytes } from "@/office-verifier";
-import { readZipEntries, ZipRewriteError, crc32 } from "@/zip-rewriter";
-import { encodeLatin1 } from "@/bytes";
-import { validateUploadedFile, UploadValidationError } from "@/file-validation";
+import { cleanGif } from "@/formats/gif-cleaner";
+import { cleanMp3 } from "@/formats/mp3-cleaner";
+import { cleanFlac } from "@/formats/flac-cleaner";
+import { cleanJpeg } from "@/browser/client-image-cleaner";
+import { cleanSvg } from "@/formats/svg-cleaner";
+import { cleanRtfText } from "@/formats/office-cleaner";
+import { verifyCleanedOfficeBytes } from "@/formats/office-verifier";
+import { readZipEntries, ZipRewriteError, crc32 } from "@/formats/zip-rewriter";
+import { encodeLatin1 } from "@/core/bytes";
+import { validateUploadedFile, UploadValidationError } from "@/validation/file-validation";
 
 const ascii = (text: string) => Array.from(text, (c) => c.charCodeAt(0));
 const toLatin1 = (bytes: Uint8Array) => Buffer.from(bytes).toString("latin1");

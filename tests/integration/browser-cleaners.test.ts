@@ -3,9 +3,9 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { cleanImageInBrowser } from "@/client-image-cleaner";
-import { cleanMediaInBrowser } from "@/client-media-cleaner";
-import { findSensitiveMetadataKeys, inspectImageMetadata } from "@/metadata-cleaner";
+import { cleanImageInBrowser } from "@/browser/client-image-cleaner";
+import { cleanMediaInBrowser } from "@/browser/client-media-cleaner";
+import { findSensitiveMetadataKeys, inspectImageMetadata } from "@/cleaners/metadata-cleaner";
 
 // The browser cleaners have no ExifTool safety net at runtime, so this suite
 // IS the safety net: real files get cleaned through the browser code paths

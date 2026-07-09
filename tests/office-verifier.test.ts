@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { cleanEpubPackage, cleanOdfPackage, cleanOoxmlPackage, cleanRtfText } from "@/office-cleaner";
-import { PackageVerificationError, verifyCleanedOfficeBytes } from "@/office-verifier";
-import { readZipEntries, readZipEntryData, rebuildZip } from "@/zip-rewriter";
+import { cleanEpubPackage, cleanOdfPackage, cleanOoxmlPackage, cleanRtfText } from "@/formats/office-cleaner";
+import { PackageVerificationError, verifyCleanedOfficeBytes } from "@/formats/office-verifier";
+import { readZipEntries, readZipEntryData, rebuildZip } from "@/formats/zip-rewriter";
 import { buildZip } from "./helpers/build-zip";
 
 // Rebuild a fixture through the real ZIP writer so it passes verifyZipStructure

@@ -11,7 +11,7 @@ export {
   ClientCleanError,
   type BrowserImageKind,
   type ClientCleanResult
-} from "./client-image-cleaner";
+} from "./browser/client-image-cleaner";
 
 export {
   cleanDocumentInBrowser,
@@ -19,7 +19,7 @@ export {
   ClientDocumentError,
   type BrowserDocumentKind,
   type ClientDocumentResult
-} from "./client-document-cleaner";
+} from "./browser/client-document-cleaner";
 
 export {
   cleanMediaInBrowser,
@@ -27,11 +27,11 @@ export {
   ClientMediaError,
   type BrowserMediaKind,
   type ClientMediaResult
-} from "./client-media-cleaner";
+} from "./browser/client-media-cleaner";
 
-export { createZip, type ZipEntry } from "./client-zip";
+export { createZip, type ZipEntry } from "./browser/client-zip";
 
-export { PackageVerificationError, verifyCleanedOfficeBytes } from "./office-verifier";
+export { PackageVerificationError, verifyCleanedOfficeBytes } from "./formats/office-verifier";
 
 export {
   CATEGORY_LABELS,
@@ -39,4 +39,4 @@ export {
   categorizeServerKeys,
   categoryLabels,
   type MetadataCategory
-} from "./metadata-categories";
+} from "./core/metadata-categories";

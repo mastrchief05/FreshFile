@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { getTempFileTtlMinutes } from "./config";
+import { getTempFileTtlMinutes } from "../core/config";
 
 const TEMP_ROOT = process.env.FRESHFILE_TEMP_DIR ?? path.join(os.tmpdir(), "freshfile");
 

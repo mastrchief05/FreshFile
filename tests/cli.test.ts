@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanOne, inspectOne, outputPathFor, runCli, DEFAULT_PREFIX, EXIT_FILE_FAILED, EXIT_OK, EXIT_USAGE } from "@/cli-core";
+import { cleanOne, inspectOne, outputPathFor, runCli, DEFAULT_PREFIX, EXIT_FILE_FAILED, EXIT_OK, EXIT_USAGE } from "@/cli/cli-core";
 
 const pngBytes = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",

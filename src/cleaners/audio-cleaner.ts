@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { ExifToolRunner } from "./exiftool-runner";
-import { defaultExifToolRunner, ExifToolError } from "./exiftool-runner";
-import type { ToolRunner } from "./media-tool-runner";
-import { defaultFfmpegRunner, defaultFfprobeRunner, MediaToolError } from "./media-tool-runner";
+import type { ExifToolRunner } from "../runtime/exiftool-runner";
+import { defaultExifToolRunner, ExifToolError } from "../runtime/exiftool-runner";
+import type { ToolRunner } from "../runtime/media-tool-runner";
+import { defaultFfmpegRunner, defaultFfprobeRunner, MediaToolError } from "../runtime/media-tool-runner";
 import { findSensitiveMetadataKeys, inspectImageMetadata, MetadataValidationError } from "./metadata-cleaner";
 
 export type AudioCleanerStrategy = "exiftool-metadata" | "ffmpeg-stream-copy";

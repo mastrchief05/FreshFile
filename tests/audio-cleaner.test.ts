@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildAudioExifToolArgs, buildFfmpegAudioCopyArgs, validateCleanedAudio } from "@/audio-cleaner";
-import type { ToolRunner } from "@/media-tool-runner";
-import type { ExifToolRunner } from "@/exiftool-runner";
+import { buildAudioExifToolArgs, buildFfmpegAudioCopyArgs, validateCleanedAudio } from "@/cleaners/audio-cleaner";
+import type { ToolRunner } from "@/runtime/media-tool-runner";
+import type { ExifToolRunner } from "@/runtime/exiftool-runner";
 
 describe("audio cleaner", () => {
   it("builds the audio metadata removal command without shell interpolation", () => {

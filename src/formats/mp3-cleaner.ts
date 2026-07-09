@@ -3,7 +3,7 @@
 // Lyrics3v2 at the end. The frames themselves are copied verbatim — no
 // re-encoding, no quality loss. Isomorphic: no Node APIs.
 
-import { bytesStartWith, decodeLatin1 } from "./bytes";
+import { bytesStartWith, decodeLatin1 } from "../core/bytes";
 
 export class Mp3CleanError extends Error {
   constructor(message: string) {

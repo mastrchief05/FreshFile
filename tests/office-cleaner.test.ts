@@ -6,8 +6,8 @@ import {
   cleanOoxmlPackage,
   cleanRtfText,
   OfficeCleanerError
-} from "@/office-cleaner";
-import { crc32, readZipEntries, readZipEntryData, rebuildZip } from "@/zip-rewriter";
+} from "@/formats/office-cleaner";
+import { crc32, readZipEntries, readZipEntryData, rebuildZip } from "@/formats/zip-rewriter";
 
 type FixtureEntry = {
   name: string;
@@ -251,7 +251,7 @@ describe("office cleaner", () => {
 
   it("rejects a decompression bomb: an entry that inflates past the cap", async () => {
     const zlib = await import("node:zlib");
-    const { readZipEntryData, ZipRewriteError } = await import("@/zip-rewriter");
+    const { readZipEntryData, ZipRewriteError } = await import("@/formats/zip-rewriter");
     // 64 MB of zeros deflates to a few KB but inflates past the 16 MB cap.
     const bombDeflate = zlib.deflateRawSync(Buffer.alloc(64 * 1024 * 1024, 0));
     const bombEntry = {

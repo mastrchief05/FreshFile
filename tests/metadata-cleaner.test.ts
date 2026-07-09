@@ -4,7 +4,7 @@ import {
   cleanTiffMetadata,
   findSensitiveMetadataKeys,
   validateMetadataSnapshots
-} from "@/metadata-cleaner";
+} from "@/cleaners/metadata-cleaner";
 
 describe("metadata cleaner", () => {
   it("builds the ExifTool cleanup command in metadata-preserving order", () => {

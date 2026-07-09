@@ -4,7 +4,7 @@
 // renderer needs — frames, palettes, graphic controls, NETSCAPE looping —
 // is copied verbatim. Isomorphic: no Node APIs.
 
-import { bytesStartWith, concatBytes, decodeLatin1 } from "./bytes";
+import { bytesStartWith, concatBytes, decodeLatin1 } from "../core/bytes";
 
 export class GifCleanError extends Error {
   constructor(message: string) {

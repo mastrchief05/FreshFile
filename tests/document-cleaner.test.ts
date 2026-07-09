@@ -7,8 +7,8 @@ import {
   buildQpdfRewriteArgs,
   cleanDocumentMetadata,
   validateCleanedDocument
-} from "@/document-cleaner";
-import { MetadataValidationError } from "@/metadata-cleaner";
+} from "@/cleaners/document-cleaner";
+import { MetadataValidationError } from "@/cleaners/metadata-cleaner";
 import { buildZip } from "./helpers/build-zip";
 
 describe("document cleaner", () => {

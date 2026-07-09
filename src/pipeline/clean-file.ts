@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
-import { cleanAudioMetadata, validateCleanedAudio } from "./audio-cleaner";
-import { cleanDocumentMetadata, PLAIN_TEXT_FORMATS, validateCleanedDocument } from "./document-cleaner";
+import { cleanAudioMetadata, validateCleanedAudio } from "../cleaners/audio-cleaner";
+import { cleanDocumentMetadata, PLAIN_TEXT_FORMATS, validateCleanedDocument } from "../cleaners/document-cleaner";
 import {
   cleanImageMetadata,
   cleanTiffMetadata,
@@ -8,15 +8,15 @@ import {
   inspectImageMetadata,
   MetadataValidationError,
   validateCleanedImage
-} from "./image-cleaner";
-import { MediaToolError } from "./media-tool-runner";
-import { OfficeCleanerError } from "./office-cleaner";
-import { cleanSvg, SvgCleanerError, validateSvgOutput } from "./svg-cleaner";
-import { cleanVideoMetadata, validateCleanedVideo, VideoValidationError } from "./video-cleaner";
-import { ExifToolError } from "./exiftool-runner";
-import type { ValidatedUpload } from "./file-validation";
-import type { CleanerStrategy, ErrorCategory } from "./job-types";
-import { categorizeServerKeys, type MetadataCategory } from "./metadata-categories";
+} from "../cleaners/image-cleaner";
+import { MediaToolError } from "../runtime/media-tool-runner";
+import { OfficeCleanerError } from "../formats/office-cleaner";
+import { cleanSvg, SvgCleanerError, validateSvgOutput } from "../formats/svg-cleaner";
+import { cleanVideoMetadata, validateCleanedVideo, VideoValidationError } from "../cleaners/video-cleaner";
+import { ExifToolError } from "../runtime/exiftool-runner";
+import type { ValidatedUpload } from "../validation/file-validation";
+import type { CleanerStrategy, ErrorCategory } from "../core/job-types";
+import { categorizeServerKeys, type MetadataCategory } from "../core/metadata-categories";
 
 // ExifTool cannot write BMP. BMP files rarely carry embedded metadata, so a
 // byte copy is a valid clean when inspection finds nothing sensitive.

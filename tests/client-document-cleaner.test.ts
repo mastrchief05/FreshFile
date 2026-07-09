@@ -1,8 +1,8 @@
 import zlib from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { cleanDocumentInBrowser, detectBrowserDocumentKind, ClientDocumentError } from "@/client-document-cleaner";
-import { categorizeBrowserRemoved } from "@/metadata-categories";
-import { readZipEntries, readZipEntryData } from "@/zip-rewriter";
+import { cleanDocumentInBrowser, detectBrowserDocumentKind, ClientDocumentError } from "@/browser/client-document-cleaner";
+import { categorizeBrowserRemoved } from "@/core/metadata-categories";
+import { readZipEntries, readZipEntryData } from "@/formats/zip-rewriter";
 
 // Same minimal ZIP builder the office-cleaner tests use.
 type FixtureEntry = { name: string; data: string | Uint8Array; stored?: boolean };
