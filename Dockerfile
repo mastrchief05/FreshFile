@@ -10,8 +10,8 @@
 # XML metadata, silently weakening post-clean validation. libio-string-perl
 # (IO::String) covers the same decoding when ExifTool reads from a pipe.
 FROM node:26-bookworm-slim AS tools
-ENV EXIFTOOL_VERSION=13.59
-ENV EXIFTOOL_SHA256=87d3317882fdae9cb4dcfe57a96a378d0132ffc02c731315bf128b19ddcf7aac
+ENV EXIFTOOL_VERSION=13.62
+ENV EXIFTOOL_SHA256=a92f866282a98150211a60e97b06db8b7468fdb46de196121633c825fb2b98ed
 ENV EXIFTOOL_PATH=/opt/exiftool/exiftool
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl perl libarchive-zip-perl libio-string-perl ffmpeg imagemagick qpdf \
