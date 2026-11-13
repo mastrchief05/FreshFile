@@ -58,21 +58,41 @@ jobs:
         run: |
           set -euo pipefail
           branch="exiftool-update/${VERSION}"
-          if gh pr list --head "$branch" --state open --json number --jq length | grep -qv '^0$'; then
-            echo "PR for ${VERSION} already open; nothing to do."
-            exit 0
-          fi
-          sed -i -E "s/^ENV EXIFTOOL_VERSION=.*/ENV EXIFTOOL_VERSION=${VERSION}/" Dockerfile
-          sed -i -E "s/^ENV EXIFTOOL_SHA256=.*/ENV EXIFTOOL_SHA256=${SHA256}/" Dockerfile
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$branch"
+
+          trigger_ci() {
+            # GITHUB_TOKEN pushes do not fire usable pull_request checks
+            # (they land as action_required). workflow_dispatch is allowed
+            # and attaches check runs to the branch head.
+            gh workflow run ci.yml --ref "$branch"
+          }
+
+          # Open PR already exists: do not fail the weekly run. Still start
+          # CI in case a previous attempt created the PR without checks.
+          if gh pr list --head "$branch" --state open --json number --jq length | grep -qv '^0$'; then
+            echo "PR for ${VERSION} already open; triggering CI and exiting."
+            trigger_ci
+            exit 0
+          fi
+
+          sed -i -E "s/^ENV EXIFTOOL_VERSION=.*/ENV EXIFTOOL_VERSION=${VERSION}/" Dockerfile
+          sed -i -E "s/^ENV EXIFTOOL_SHA256=.*/ENV EXIFTOOL_SHA256=${SHA256}/" Dockerfile
+          git checkout -B "$branch"
           git commit -am "Bump ExifTool to ${VERSION}"
-          git push origin "$branch"
+
+          # A leftover branch from a failed earlier run (push succeeded,
+          # gh pr create did not) must not reject this push.
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            git fetch origin "$branch"
+            git push --force-with-lease origin "$branch"
+          else
+            git push origin "$branch"
+          fi
+
           gh pr create \
             --title "Bump ExifTool to ${VERSION}" \
             --body "Automated weekly check: upstream production release \`${VERSION}\` replaces the pinned version. Tarball SHA-256 verified at download time: \`${SHA256}\`. CI runs the Docker integration suite (including the ExifTool environment-parity tests) against the new version." \
             --head "$branch"
-          # GITHUB_TOKEN pushes do not fire pull_request workflows; start CI
-          # explicitly so the PR carries real check results.
-          gh workflow run ci.yml --ref "$branch"
+          trigger_ci
